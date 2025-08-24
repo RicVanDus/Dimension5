@@ -6,33 +6,37 @@ class Game:
     def __init__(self):
         pygame.init()
 
-        screen_res = (640,480)
+        screen_res = (1024,786)
+        internal_res = (320, 240)
         self.running = True
         screen_flags = pygame.FULLSCREEN
         self.screen = pygame.display.set_mode(screen_res)
+        self.render_display = pygame.Surface(internal_res)
         self.clock = pygame.time.Clock()
 
         pygame.display.set_caption('Dimension 5')
 
-        # Background
-        self.screen_bg = pygame.Surface(screen_res)
-        self.screen_bg.fill('#222222')
-
         self.player1 = Player(self)
-
         self.selected_player = self.player1
         self.timer = 0
+
+        self.test_surface = pygame.Surface((300,12))
+        self.test_surface.fill('red')
 
     def run(self):
         while self.running:
             self.timer += 1
             self.controls()
 
-            self.screen.blit(self.screen_bg,(0,0))
+            self.render_display.fill('#222222')
+
+            self.render_display.blit(self.test_surface, (0, 200))
 
             # maybe replace by a game manager? That manages the screens etc.
             self.player1.update()
-            self.player1.render(self.screen)
+            self.player1.render(self.render_display)
+
+            self.screen.blit(pygame.transform.scale(self.render_display, self.screen.get_size()), (0, 0))
 
             pygame.display.update()
             self.clock.tick(60)
@@ -52,11 +56,14 @@ class Game:
                     self.selected_player.moving_left = True
                 if event.key == pygame.K_RIGHT:
                     self.selected_player.moving_right = True
+                if event.key == pygame.K_UP:
+                    self.selected_player.moving_up = True
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:
                     self.selected_player.moving_left = False
                 if event.key == pygame.K_RIGHT:
                     self.selected_player.moving_right = False
-
+                if event.key == pygame.K_UP:
+                    self.selected_player.moving_up = False
 
 Game().run()
