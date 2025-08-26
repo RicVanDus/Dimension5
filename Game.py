@@ -9,7 +9,7 @@ class Game:
         screen_res = (1024,786)
         internal_res = (320, 240)
         self.running = True
-        screen_flags = pygame.FULLSCREEN
+        SCREEN_FLAGS = pygame.FULLSCREEN
         self.screen = pygame.display.set_mode(screen_res)
         self.render_display = pygame.Surface(internal_res)
         self.clock = pygame.time.Clock()
@@ -22,6 +22,7 @@ class Game:
 
         self.test_surface = pygame.Surface((300,12))
         self.test_surface.fill('red')
+        self.test_surface_rect = pygame.Rect((0,200),(300,12))
 
     def run(self):
         while self.running:
