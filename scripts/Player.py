@@ -41,7 +41,6 @@ class Player:
                 player_rect.bottom = self.game.test_surface_rect.top
                 #self.pos[0] = player_rect.x
                 self.pos[1] = player_rect.y
-                print(self.pos)
 
             self.velocity[1] = min(1, self.velocity[1] + 0.02)
             self.player_controls()
@@ -49,9 +48,6 @@ class Player:
     def player_controls(self):
         self.pos[0] += self.velocity[0] + ((self.moving_right - self.moving_left) * self.move_speed)
         self.pos[1] += self.velocity[1]
-
-        # this can be removed asap.
-        self.pos[0] = max(0, min(self.game.render_display.get_width() - self.player_image.get_width(), self.pos[0]))
 
         if self.moving_up:
             self.velocity[1] = -1
@@ -63,5 +59,5 @@ class Player:
     def deselect_player(self):
         self.selected = False
 
-    def render(self, surface):
-        surface.blit(self.player_image, self.pos)
+    def render(self, surface, scroll_offset=[0,0]):
+        surface.blit(self.player_image, (self.pos[0] - scroll_offset[0], self.pos[1] - scroll_offset[1]))
