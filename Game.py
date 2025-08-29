@@ -30,6 +30,7 @@ class Game:
         self.load_assets()
 
         self.dim1_tilemap = Tilemap(self)
+        self.selected_tilemap = self.dim1_tilemap
 
 
     def run(self):

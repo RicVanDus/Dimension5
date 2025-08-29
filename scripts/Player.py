@@ -36,11 +36,11 @@ class Player:
         if self.selected:
             player_rect = self.rect()
 
-            #check for collisions here: just a test with rects that are static. When we are moving to tilemaps, we can make this dynamic.
-            if player_rect.colliderect(self.game.test_surface_rect):
-                player_rect.bottom = self.game.test_surface_rect.top
-                #self.pos[0] = player_rect.x
-                self.pos[1] = player_rect.y
+            # for now this only checks landing on tiles
+            for rect in self.game.selected_tilemap.physics_tiles_around(self.pos):
+                if player_rect.colliderect(rect):
+                    player_rect.bottom = rect.top
+                    self.pos[1] = player_rect.y
 
             self.velocity[1] = min(1, self.velocity[1] + 0.02)
             self.player_controls()
