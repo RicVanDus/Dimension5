@@ -12,17 +12,17 @@ class Tilemap():
         self.tilemap = {}
         self.tiles_off_grid = []
 
-        for i in range(30):
-            if random.randint(0,1) > 0:
-                self.tilemap[str(i + 3) + ':10'] = {'type': 'placeholder', 'pos':(i + 3, 10)}
+        for i in range(10):
+            self.tilemap[str(i + 3) + ':10'] = {'type': 'placeholder', 'pos':(i + 3, 10)}
 
+        for i in range(5):
+            self.tilemap[str(i + 8) + ':9'] = {'type': 'placeholder', 'pos':(i + 8, 9)}
 
     def tiles_around(self, pos) -> list:
         tiles = []
         tile_pos = (int(pos[0] // self.tile_size), int(pos[1] // self.tile_size))
         for offset in NEIGHBOR_OFFSETS:
             check_loc = str(offset[0] + tile_pos[0]) + ':' +  str(offset[1] + tile_pos[1])
-            print(check_loc)
             if check_loc in self.tilemap:
                 tiles.append(self.tilemap[check_loc])
         return tiles
