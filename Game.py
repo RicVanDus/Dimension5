@@ -5,6 +5,8 @@ from scripts.Utils import load_image, load_images
 from sys import exit
 import random
 
+SCREEN_FLAGS = pygame.FULLSCREEN
+
 class Game:
     def __init__(self):
         pygame.init()
@@ -12,7 +14,7 @@ class Game:
         screen_res = (1024,786)
         internal_res = (640, 480)
         self.running = True
-        SCREEN_FLAGS = pygame.FULLSCREEN
+
         self.screen = pygame.display.set_mode(screen_res)
         self.render_display = pygame.Surface(internal_res)
         self.clock = pygame.time.Clock()
