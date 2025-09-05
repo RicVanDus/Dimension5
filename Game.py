@@ -26,7 +26,9 @@ class Game:
         self.timer = 0
         self.cam_scroll = [0,0]
 
-        self.test_surface_rect = pygame.Rect((0,200),(300,12))
+        self.dim1_container = pygame.Surface((640,120))
+
+        self.test_rect = pygame.Rect((30,30), (150,60))
 
         self.assets = {}
         self.load_assets()
@@ -39,16 +41,25 @@ class Game:
         while self.running:
             self.timer += 1
             self.controls()
-            self.cam_scroll[0] += (self.selected_player.rect().centerx - self.render_display.get_width() / 2 - self.cam_scroll[0]) / 30
+
+
+            self.cam_scroll[0] += (self.selected_player.rect().centerx - self.dim1_container.get_width() / 2 - self.cam_scroll[0]) / 30
+            self.cam_scroll[1] += (self.selected_player.rect().centery - self.dim1_container.get_height() / 2 - self.cam_scroll[1]) / 30
 
             self.render_display.fill('#222222')
 
-            self.dim1_tilemap.render(self.render_display, self.cam_scroll)
+            pygame.draw.rect(self.render_display, (255,255,0,255),self.test_rect, 2, 8)
+
+            #Temp here: we need a method for these containers
+            self.dim1_container.fill('#012332')
+
+
+            self.dim1_tilemap.render(self.dim1_container, self.cam_scroll)
 
             # maybe replace by a game manager? That manages the screens etc.
             self.player1.update()
-            self.player1.render(self.render_display, self.cam_scroll)
-
+            self.player1.render(self.dim1_container, self.cam_scroll)
+            self.render_display.blit(self.dim1_container, (0, 180))
             self.screen.blit(pygame.transform.scale(self.render_display, self.screen.get_size()), (0, 0))
 
             pygame.display.update()
