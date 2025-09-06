@@ -24,17 +24,30 @@ class Game:
         self.player1 = Player(self)
         self.selected_player = self.player1
         self.timer = 0
-        self.cam_scroll = [0,0]
 
-        self.dim1_container = pygame.Surface((640,120))
+        self.dim1_cam_scroll = [0, 0]
+        self.dim2_cam_scroll = [0, 0]
+        self.dim3_cam_scroll = [0, 0]
+        self.dim4_cam_scroll = [0, 0]
 
-        self.test_rect = pygame.Rect((30,30), (150,60))
+        self.dim1_container = pygame.Surface((640, 120))
+        self.dim2_container = pygame.Surface((640, 120))
+        self.dim3_container = pygame.Surface((640, 120))
+        self.dim4_container = pygame.Surface((640, 120))
+
+        self.dim1_gameview = pygame.Surface((600, 100))
+        self.dim2_gameview = pygame.Surface((600, 100))
+        self.dim3_gameview = pygame.Surface((600, 100))
+        self.dim4_gameview = pygame.Surface((600, 100))
 
         self.assets = {}
         self.load_assets()
 
         self.dim1_tilemap = Tilemap(self)
         self.selected_tilemap = self.dim1_tilemap
+
+        self.dimensions_active = 1
+        self.current_level = 1
 
 
     def run(self):
@@ -43,23 +56,29 @@ class Game:
             self.controls()
 
 
-            self.cam_scroll[0] += (self.selected_player.rect().centerx - self.dim1_container.get_width() / 2 - self.cam_scroll[0]) / 30
-            self.cam_scroll[1] += (self.selected_player.rect().centery - self.dim1_container.get_height() / 2 - self.cam_scroll[1]) / 30
+            self.dim1_cam_scroll[0] += (self.selected_player.rect().centerx - self.dim1_gameview.get_width() / 2 - self.dim1_cam_scroll[0]) / 30
+            self.dim1_cam_scroll[1] += (self.selected_player.rect().centery - self.dim1_gameview.get_height() / 2 - self.dim1_cam_scroll[1]) / 30
 
             self.render_display.fill('#222222')
 
-            pygame.draw.rect(self.render_display, (255,255,0,255),self.test_rect, 2, 8)
-
             #Temp here: we need a method for these containers
-            self.dim1_container.fill('#012332')
+            self.dim1_container.fill('#222222')
+            self.dim1_gameview.fill('#233200')
 
-
-            self.dim1_tilemap.render(self.dim1_container, self.cam_scroll)
+            self.dim1_tilemap.render(self.dim1_gameview, self.dim1_cam_scroll)
 
             # maybe replace by a game manager? That manages the screens etc.
             self.player1.update()
-            self.player1.render(self.dim1_container, self.cam_scroll)
+            self.player1.render(self.dim1_gameview, self.dim1_cam_scroll)
+
+            self.dim1_container.blit(self.dim1_gameview, (30, 15))
+            test_rect = self.dim1_gameview.get_rect()
+            test_rect.x += 30
+            test_rect.y += 15
+            pygame.draw.rect(self.dim1_container, (255,255,255,255), test_rect, 2, 8)
+
             self.render_display.blit(self.dim1_container, (0, 180))
+
             self.screen.blit(pygame.transform.scale(self.render_display, self.screen.get_size()), (0, 0))
 
             pygame.display.update()
@@ -91,9 +110,32 @@ class Game:
                     self.selected_player.moving_up = False
 
 
+    def create_dimensions(self):
+        """
+            Calls the render screen methods per dimension
+        """
+        ...
+
+
+    def render_screen(self, dimension):
+        """
+            This is where we handle all the visual stuff per dimension
+            Loading the right tilemap in the right screen, etc
+            Also checking if the dimension is currently active and then
+            rendering the border a different color
+
+            Keep all the numbers dynamic and based on internal resolution!!
+        """
+
+        ...
+
+
     def load_assets(self):
         self.assets = {
             "placeholder" : load_image('test/placeholder.png')
         }
+
+
+
 
 Game().run()

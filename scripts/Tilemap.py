@@ -1,7 +1,7 @@
 import pygame
 import random
 
-NEIGHBOR_OFFSETS = [(0, 0), (-1, 0), (-1, -1), (0, -1), (1, 0), (0, 1), (1, 1), (-1, 1), (1, -1)]
+NEIGHBOUR_OFFSETS = [(0, 0), (-1, 0), (-1, -1), (0, -1), (1, 0), (0, 1), (1, 1), (-1, 1), (1, -1)]
 PHYSICS_TILES = {'placeholder'}
 
 #maybe add biomes? So you can switch the look of the level
@@ -21,7 +21,7 @@ class Tilemap():
     def tiles_around(self, pos) -> list:
         tiles = []
         tile_pos = (int(pos[0] // self.tile_size), int(pos[1] // self.tile_size))
-        for offset in NEIGHBOR_OFFSETS:
+        for offset in NEIGHBOUR_OFFSETS:
             check_loc = str(offset[0] + tile_pos[0]) + ':' +  str(offset[1] + tile_pos[1])
             if check_loc in self.tilemap:
                 tiles.append(self.tilemap[check_loc])
