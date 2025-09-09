@@ -35,10 +35,24 @@ class Game:
         self.dim3_container = pygame.Surface((640, 120))
         self.dim4_container = pygame.Surface((640, 120))
 
+        self.dim_containers = [
+            self.dim1_container,
+            self.dim2_container,
+            self.dim3_container,
+            self.dim4_container
+            ]
+
         self.dim1_gameview = pygame.Surface((600, 100))
         self.dim2_gameview = pygame.Surface((600, 100))
         self.dim3_gameview = pygame.Surface((600, 100))
         self.dim4_gameview = pygame.Surface((600, 100))
+
+        self.dim_gameviews = [
+            self.dim1_gameview,
+            self.dim2_gameview,
+            self.dim3_gameview,
+            self.dim4_gameview
+        ]
 
         self.assets = {}
         self.load_assets()
@@ -46,7 +60,8 @@ class Game:
         self.dim1_tilemap = Tilemap(self)
         self.selected_tilemap = self.dim1_tilemap
 
-        self.dimensions_active = 1
+        self.dimensions_active = 4
+        self.active_dimension = 0
         self.current_level = 1
 
 
@@ -54,7 +69,6 @@ class Game:
         while self.running:
             self.timer += 1
             self.controls()
-
 
             self.dim1_cam_scroll[0] += (self.selected_player.rect().centerx - self.dim1_gameview.get_width() / 2 - self.dim1_cam_scroll[0]) / 30
             self.dim1_cam_scroll[1] += (self.selected_player.rect().centery - self.dim1_gameview.get_height() / 2 - self.dim1_cam_scroll[1]) / 30
@@ -110,23 +124,24 @@ class Game:
                     self.selected_player.moving_up = False
 
 
-    def create_dimensions(self):
-        """
-            Calls the render screen methods per dimension
-        """
-        ...
+    def render_gameplay(self, surface):
+        for i in self.dimensions_active:
+            self.render_dim_screen(i)
 
 
-    def render_screen(self, dimension):
-        """
-            This is where we handle all the visual stuff per dimension
-            Loading the right tilemap in the right screen, etc
-            Also checking if the dimension is currently active and then
-            rendering the border a different color
+    def render_dim_screen(self, dimension):
+        self.dim_containers[dimension].fill('#222222')
+        self.dim_gameviews[dimension].fill('233200')
+        self.dim1_tilemap.render(self.dim_gameviews[dimension], self.dim1_cam_scroll)
+        #need to make this dynamic still
+        if dimension == self.active_dimension:
+            self.player1.update()
+            self.player1.render(self.dim1_gameview, self.dim1_cam_scroll)
 
-            Keep all the numbers dynamic and based on internal resolution!!
-        """
+        self.dim_containers[dimension].blit(self.dim_gameviews[dimension], (30, 15))
 
+
+    def select_next_dimension(self):
         ...
 
 
