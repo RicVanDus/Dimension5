@@ -1,4 +1,6 @@
 import pygame
+
+from scripts.Animation import Animation
 from scripts.Player import Player
 from scripts.Tilemap import Tilemap
 from scripts.Utils import load_image, load_images
@@ -76,6 +78,7 @@ class Game:
         self.press_down = False
 
 
+
     def run(self):
         while self.running:
             self.timer += 1
@@ -112,6 +115,8 @@ class Game:
                     self.selected_player.moving_up = True
                 if event.key == pygame.K_DOWN and self.press_down == False:
                     self.dimensions_active += 1
+                    if self.dimensions_active >= 5:
+                        self.dimensions_active = 1
                     self.press_down = True
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:
@@ -158,7 +163,8 @@ class Game:
 
     def load_assets(self):
         self.assets = {
-            "placeholder" : load_image('test/placeholder.png')
+            "placeholder" : load_image('test/placeholder.png'),
+            "test/anim_placeholder" : Animation(load_images('test'), 300, True)
         }
 
 

@@ -2,6 +2,8 @@ import pygame
 
 
 # for any animations, where you swap out images at a certain rate
+# make sure frametime is based on 60 fps !!!!!!!!!
+.
 class Animation():
     def __init__(self, images, frametime: int, loop: bool):
         self.images = images
@@ -13,8 +15,9 @@ class Animation():
 
     def play(self) -> pygame.Surface:
         while True:
+            print("Frame animation", self.frame, sep=" : ")
             self.frame += 1
-            return self.images[int(self.frame / self.frametime % len((self.images)))]
+            return self.images[int(self.frame / self.frametime % len(self.images))]
 
 
     def pause(self):
