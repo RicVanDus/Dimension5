@@ -164,7 +164,7 @@ class Game:
     def load_assets(self):
         self.assets = {
             "placeholder" : load_image('test/placeholder.png'),
-            "test/anim_placeholder" : Animation(load_images('test'), 300, True)
+            "test/anim_placeholder" : Animation(load_images('test'), 100, True)
         }
 
 
