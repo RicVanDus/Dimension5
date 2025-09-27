@@ -24,7 +24,7 @@ class Player:
         self.move_speed = 0.6
         self.moving_left = False
         self.moving_right = False
-        self.moving_up = False
+        self.jump = False
         self.moving_down = False
         self.facing_right = True
         self.velocity = [0.0, 0.0]
@@ -65,7 +65,7 @@ class Player:
 
             self.dir_force[1] = min(1.5, self.dir_force[1] + 0.05)
 
-        if self.moving_up:
+        if self.jump:
             self.dir_force[1] = -1
 
 

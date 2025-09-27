@@ -1,3 +1,5 @@
+from encodings.punycode import selective_find
+
 import pygame
 
 from scripts.Animation import Animation
@@ -15,8 +17,6 @@ INTERNAL_RES = (640, 480)
 class Game:
     def __init__(self):
         pygame.init()
-
-
         self.running = True
 
         self.screen = pygame.display.set_mode(SCREEN_RES)
@@ -25,14 +25,27 @@ class Game:
 
         pygame.display.set_caption('Dimension 5')
 
-        self.player1 = Player(self)
-        self.selected_player = self.player1
         self.timer = 0
+
+        self.press_up = False
+        self.press_down = False
 
         self.dim1_cam_scroll = [0, 0]
         self.dim2_cam_scroll = [0, 0]
         self.dim3_cam_scroll = [0, 0]
         self.dim4_cam_scroll = [0, 0]
+
+        self.player1 = Player(self)
+        self.player2 = Player(self)
+        self.player3 = Player(self)
+        self.player4 = Player(self)
+
+        self.players = [
+            self.player1,
+            self.player2,
+            self.player3,
+            self.player4
+        ]
 
         self.dim_cam_scrolls = [
             self.dim1_cam_scroll,
@@ -51,7 +64,7 @@ class Game:
             self.dim2_container,
             self.dim3_container,
             self.dim4_container
-            ]
+        ]
 
         self.dim1_gameview = pygame.Surface((600, 100))
         self.dim2_gameview = pygame.Surface((600, 100))
@@ -65,30 +78,33 @@ class Game:
             self.dim4_gameview
         ]
 
+        self.dim1_tilemap = Tilemap(self)
+        self.dim2_tilemap = Tilemap(self)
+        self.dim3_tilemap = Tilemap(self)
+        self.dim4_tilemap = Tilemap(self)
+
+        self.dim_tilemaps = [
+            self.dim1_tilemap,
+            self.dim2_tilemap,
+            self.dim3_tilemap,
+            self.dim4_tilemap
+        ]
+
         self.assets = {}
         self.load_assets()
-
-        self.dim1_tilemap = Tilemap(self)
-        self.selected_tilemap = self.dim1_tilemap
 
         self.dimensions_active = 1
         self.active_dimension = 0
         self.current_level = 1
-
-        self.press_down = False
-
+        self.selected_tilemap = self.dim1_tilemap
+        self.selected_player = self.player1
 
 
     def run(self):
         while self.running:
             self.timer += 1
+
             self.controls()
-
-            self.dim1_cam_scroll[0] += (self.selected_player.rect().centerx - self.dim1_gameview.get_width() / 2 - self.dim1_cam_scroll[0]) / 30
-            self.dim1_cam_scroll[1] += (self.selected_player.rect().centery - self.dim1_gameview.get_height() / 2 - self.dim1_cam_scroll[1]) / 30
-
-            self.render_display.fill('#222222')
-
             self.render_gameplay()
 
             self.screen.blit(pygame.transform.scale(self.render_display, self.screen.get_size()), (0, 0))
@@ -111,25 +127,40 @@ class Game:
                     self.selected_player.moving_left = True
                 if event.key == pygame.K_RIGHT:
                     self.selected_player.moving_right = True
-                if event.key == pygame.K_UP:
-                    self.selected_player.moving_up = True
+                if event.key == pygame.K_SPACE:
+                    self.selected_player.jump = True
+
+                if event.key == pygame.K_UP and self.press_up == False:
+                    self.select_next_dimension(-1)
+                    self.press_up = True
                 if event.key == pygame.K_DOWN and self.press_down == False:
-                    self.dimensions_active += 1
-                    if self.dimensions_active >= 5:
-                        self.dimensions_active = 1
-                    self.press_down = True
+                    self.select_next_dimension(1)
+                    self.press_up = True
+                if event.key == pygame.K_1:
+                    self.dimensions_active = 1
+                if event.key == pygame.K_2:
+                    self.dimensions_active = 2
+                if event.key == pygame.K_3:
+                    self.dimensions_active = 3
+                if event.key == pygame.K_4:
+                    self.dimensions_active = 4
+
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:
                     self.selected_player.moving_left = False
                 if event.key == pygame.K_RIGHT:
                     self.selected_player.moving_right = False
+                if event.key == pygame.K_SPACE:
+                    self.selected_player.jump = False
                 if event.key == pygame.K_UP:
-                    self.selected_player.moving_up = False
+                    self.press_up = False
                 if event.key == pygame.K_DOWN:
-                    self.press_down = False
+                    self.press_up = False
 
 
     def render_gameplay(self):
+        self.render_display.fill('#222222')
+
         for i in range(self.dimensions_active):
             self.render_dim_screen(i)
 
@@ -137,12 +168,14 @@ class Game:
     def render_dim_screen(self, dimension):
         self.dim_containers[dimension].fill('#222222')
         self.dim_gameviews[dimension].fill('#233200')
-        self.dim1_tilemap.render(self.dim_gameviews[dimension], self.dim1_cam_scroll)
+        self.dim_tilemaps[dimension].render(self.dim_gameviews[dimension], self.dim_cam_scrolls[dimension])
 
-        #need to make this dynamic still
-        if dimension == self.active_dimension:
-            self.player1.update()
-            self.player1.render(self.dim1_gameview, self.dim1_cam_scroll)
+        #render players
+        self.players[dimension].update()
+        self.players[dimension].render(self.dim_gameviews[dimension], self.dim_cam_scrolls[dimension])
+
+        self.dim_cam_scrolls[dimension][0] += (self.players[dimension].rect().centerx - self.dim1_gameview.get_width() / 2 - self.dim_cam_scrolls[dimension][0]) / 30
+        self.dim_cam_scrolls[dimension][1] += (self.players[dimension].rect().centery - self.dim1_gameview.get_height() / 2 - self.dim_cam_scrolls[dimension][1]) / 30
 
         self.dim_containers[dimension].blit(self.dim_gameviews[dimension], (30, 15))
 
@@ -157,8 +190,10 @@ class Game:
         self.render_display.blit(self.dim_containers[dimension], (0, container_pos))
 
 
-    def select_next_dimension(self):
-        ...
+    def select_next_dimension(self, ind):
+        self.active_dimension = (self.active_dimension + ind) % 4
+        self.selected_player = self.players[self.active_dimension]
+        self.selected_tilemap = self.dim_tilemaps[self.active_dimension]
 
 
     def load_assets(self):
