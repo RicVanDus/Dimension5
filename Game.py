@@ -12,7 +12,7 @@ import random
 SCREEN_FLAGS = pygame.FULLSCREEN
 SCREEN_RES = (1024, 786)
 INTERNAL_RES = (640, 480)
-
+BG_COLOR = '#000000'
 
 class Game:
     def __init__(self):
@@ -65,6 +65,8 @@ class Game:
             self.dim3_container,
             self.dim4_container
         ]
+
+        self.dim_container_veil = pygame.Surface((640,120), pygame.SRCALPHA)
 
         self.dim1_gameview = pygame.Surface((600, 100))
         self.dim2_gameview = pygame.Surface((600, 100))
@@ -159,14 +161,14 @@ class Game:
 
 
     def render_gameplay(self):
-        self.render_display.fill('#222222')
+        self.render_display.fill(BG_COLOR)
 
         for i in range(self.dimensions_active):
             self.render_dim_screen(i)
 
 
     def render_dim_screen(self, dimension):
-        self.dim_containers[dimension].fill('#222222')
+        self.dim_containers[dimension].fill(BG_COLOR)
         self.dim_gameviews[dimension].fill('#233200')
         self.dim_tilemaps[dimension].render(self.dim_gameviews[dimension], self.dim_cam_scrolls[dimension])
 
@@ -182,12 +184,22 @@ class Game:
         rect = self.dim_gameviews[dimension].get_rect()
         rect.x += 30
         rect.y += 15
-        pygame.draw.rect(self.dim_containers[dimension], (255, 255, 255, 255), rect, 2, 8)
+
+        pygame.draw.rect(self.dim_containers[dimension], (255,255,255,255), rect, 2, 8)
 
         # calculating position
         container_height_offset = self.dim_containers[dimension].get_height() / 2
         container_pos = (INTERNAL_RES[1] / 2) - (container_height_offset * (self.dimensions_active - dimension)) + (container_height_offset * dimension)
+
+        # rendering a veil for inactive dimensions
+        if (dimension != self.active_dimension):
+            container_veil = pygame.Surface(self.dim_containers[dimension].get_size(), pygame.SRCALPHA)
+            pygame.draw.rect(container_veil, (0,0,0,150), container_veil.get_rect())
+            self.dim_containers[dimension].blit(container_veil, (0,0))
+
         self.render_display.blit(self.dim_containers[dimension], (0, container_pos))
+
+
 
 
     def select_next_dimension(self, ind):
@@ -201,7 +213,5 @@ class Game:
             "placeholder" : load_image('test/placeholder.png'),
             "test/anim_placeholder" : Animation(load_images('test'), 100, True)
         }
-
-
 
 Game().run()
