@@ -1,3 +1,9 @@
+"""
+Runs the game and renders the main viewport and gamescreens
+Handles all controls
+
+"""
+
 from encodings.punycode import selective_find
 
 import pygame
@@ -5,7 +11,7 @@ import pygame
 from scripts.Animation import Animation
 from scripts.Player import Player
 from scripts.Tilemap import Tilemap
-from scripts.Utils import load_image, load_images
+from scripts.Utils import load_image, load_images, TweenFloat
 from sys import exit
 import random
 
@@ -101,9 +107,12 @@ class Game:
         self.selected_tilemap = self.dim1_tilemap
         self.selected_player = self.player1
 
+        self.testtweener = TweenFloat(5.0, 2.0, 10.0)
+
 
     def run(self):
         while self.running:
+            #print(self.testtweener.go())
             self.timer += 1
 
             self.controls()
@@ -192,18 +201,16 @@ class Game:
         container_pos = (INTERNAL_RES[1] / 2) - (container_height_offset * (self.dimensions_active - dimension)) + (container_height_offset * dimension)
 
         # rendering a veil for inactive dimensions
-        if (dimension != self.active_dimension):
+        if dimension != self.active_dimension:
             container_veil = pygame.Surface(self.dim_containers[dimension].get_size(), pygame.SRCALPHA)
-            pygame.draw.rect(container_veil, (0,0,0,150), container_veil.get_rect())
+            pygame.draw.rect(container_veil, (0,0,0,180), container_veil.get_rect())
             self.dim_containers[dimension].blit(container_veil, (0,0))
 
         self.render_display.blit(self.dim_containers[dimension], (0, container_pos))
 
 
-
-
     def select_next_dimension(self, ind):
-        self.active_dimension = (self.active_dimension + ind) % 4
+        self.active_dimension = (self.active_dimension + ind) % self.dimensions_active
         self.selected_player = self.players[self.active_dimension]
         self.selected_tilemap = self.dim_tilemaps[self.active_dimension]
 

@@ -52,7 +52,6 @@ class Player:
             self.pos[0] += frame_movement[0]
             # collision with tiles
             for rect in self.game.selected_tilemap.physics_tiles_around(self.pos):
-                print(player_rect.centerx, "  ", rect.centerx)
                 if player_rect.colliderect(rect):
                     if self.dir_force[1] > 0:
                         player_rect.bottom = rect.top
