@@ -20,6 +20,7 @@ SCREEN_RES = (2048, 1572)
 INTERNAL_RES = (640, 480)
 BG_COLOR = '#000000'
 BG_UI_COLOR = '#222222'
+BASE_FILE_PATH = 'levels/'
 
 class LevelEditor:
     def __init__(self):
@@ -31,3 +32,9 @@ class LevelEditor:
 
     def run(self):
         ...
+
+
+    def Export(self, data, filename) -> None:
+        with open(file=BASE_FILE_PATH + filename) as file:
+            file.write(data)
+

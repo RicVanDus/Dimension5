@@ -112,7 +112,7 @@ class Game:
 
     def run(self):
         while self.running:
-            #print(self.testtweener.go())
+            print(self.testtweener.go())
             self.timer += 1
 
             self.controls()

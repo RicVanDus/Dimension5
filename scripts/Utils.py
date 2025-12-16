@@ -18,6 +18,8 @@ def load_images(path: str) -> list[pygame.Surface]:
 class TweenFloat():
     """
         Tweens a float value in x seconds
+
+        TODO: Make different if states whether its counting down or up
     """
 
     def __init__(self, start_value: float, end_value: float, time: float):
@@ -29,7 +31,6 @@ class TweenFloat():
     def go(self) -> float:
         running = True
         while running:
-            # still have to cap value to end up with exactly the end valueS
             if self.value != self.end_value:
                 self.value += ((self.end_value - self.start_value) / (60.0 * self.time))
                 return self.value
