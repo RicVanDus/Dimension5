@@ -7,6 +7,8 @@ on:
 jobs:
   auto-reply:
     runs-on: ubuntu-latest
+    # filter on me
+    if: github.event.issue.user.login == 'Richard-channable'
 
     permissions:
       issues: write
