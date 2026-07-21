@@ -2,6 +2,22 @@ import os
 import sys
 import json
 import urllib.request
+from typing import List, Dict, Optional
+from pydantic import BaseModel, Field
+
+# Dataclasses
+class IssueUser(BaseModel):
+    login: str
+
+class IssueLabel(BaseModel):
+    name: str
+    color: str
+
+class Issue(BaseModel):
+    body: str
+    title: str
+    labels: List[IssueLabel] | List
+    user: IssueUser
 
 
 def get_current_issue_data() -> dict:
@@ -42,11 +58,11 @@ def get_current_issue_data() -> dict:
 
 def main():
 
-    issue_data = get_current_issue_data()
+    issue_data = Issue.model_validate(get_current_issue_data())
 
     # Example logic: Generate text based on conditions, API calls, etc.
     # Replace this with your actual logic
-    comment_text = json.dumps(issue_data, indent=4)
+    comment_text = issue_data
 
     # If you decide NOT to send a reply, set comment_text to empty string ""
     # comment_text = ""
