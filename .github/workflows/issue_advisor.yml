@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Wait for it
-        run: sleep 5s # TODO: change to 5min when testing is over
+        run: sleep 1m # TODO: change to 5min when testing is over
 
       # Required so the action can access your Python script in the repository
       - name: Checkout repository
