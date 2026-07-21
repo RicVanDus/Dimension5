@@ -1,33 +1,57 @@
 import os
 import sys
 import json
+import urllib.request
 
-def main():
 
-    # read contents of the issue
+def get_current_issue_data() -> dict:
     event_path = os.getenv("GITHUB_EVENT_PATH")
 
     if not event_path:
         print("Error: No 'GITHUB_EVENT_PATH' set.")
         sys.exit(1)
 
-    with open(event_path, 'r', encoding='utf-8') as f_issue:
-        event_data = json.load(f_issue)
+    github_token = os.getenv('GITHUB_TOKEN')
 
-    # Access issue contents
-    issue = event_data.get('issue', {})
-    issue_title = issue.get('title', '')
-    issue_body = issue.get('body', '')
-    issue_author = issue.get('user', {}).get('login', '')
+    # Get the repository info and issue number from the trigger event
+    with open(event_path, 'r', encoding='utf-8') as f_event:
+        event_data = json.load(f_event)
+
+    repo_owner = event_data['repository']['owner']['login']
+    repo_name = event_data['repository']['name']
+    issue_number = event_data['issue']['number']
+
+    """Fetch the current, up-to-date issue data from GitHub's REST API."""
+    url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/issues/{issue_number}"
+
+    headers = {
+        "Authorization": f"Bearer {github_token}",
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "GitHub-Actions-Script"
+    }
+
+    req = urllib.request.Request(url, headers=headers)
+
+    with urllib.request.urlopen(req) as response:
+        if response.status == 200:
+            return json.loads(response.read().decode('utf-8'))
+        else:
+            print(f"Error: Can't fetch data for issue {issue_number}: status {response.status}")
+            sys.exit(1)
+
+
+def main():
+
+    issue_data = get_current_issue_data()
 
     # Example logic: Generate text based on conditions, API calls, etc.
     # Replace this with your actual logic
-    comment_text = json.dumps(issue, indent=4)
+    comment_text = json.dumps(issue_data, indent=4)
 
     # If you decide NOT to send a reply, set comment_text to empty string ""
     # comment_text = ""
 
-    # Write output to GITHUB_OUTPUT environment file so GitHub Actions can read it
+    # if there's a comment generated, write output to GITHUB_OUTPUT environment file so GitHub Actions can read it
     github_output = os.getenv('GITHUB_OUTPUT')
     if github_output and comment_text:
         with open(github_output, 'w') as f_comment:
