@@ -13,11 +13,15 @@ class IssueLabel(BaseModel):
     name: str
     color: str
 
-class Issue(BaseModel):
+class IssueData(BaseModel):
     body: str
     title: str
-    labels: List[IssueLabel] | List
+    labels: Optional[List[IssueLabel]] = []
     user: IssueUser
+
+    @property
+    def label_names(self) -> set[str]:
+        return {label.name for label in self.labels}
 
 
 def get_current_issue_data() -> dict:
@@ -56,9 +60,19 @@ def get_current_issue_data() -> dict:
             sys.exit(1)
 
 
-def main():
+def extractKeywords():
+    pass
 
-    issue_data = Issue.model_validate(get_current_issue_data())
+
+def createBasicQuery():
+    pass
+
+
+def main():
+    issue_data = IssueData.model_validate(get_current_issue_data())
+
+    if "bug" in issue_data.label_names:
+        issue_data += "\n ITS A BUG!"
 
     # Example logic: Generate text based on conditions, API calls, etc.
     # Replace this with your actual logic
