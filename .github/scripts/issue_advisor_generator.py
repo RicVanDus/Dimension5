@@ -72,14 +72,9 @@ def main():
     issue_data = IssueData.model_validate(get_current_issue_data())
 
     if "bug" in issue_data.label_names:
-        issue_data += "\n ITS A BUG!"
-
-    # Example logic: Generate text based on conditions, API calls, etc.
-    # Replace this with your actual logic
-    comment_text = issue_data
-
-    # If you decide NOT to send a reply, set comment_text to empty string ""
-    # comment_text = ""
+        comment_text = str(issue_data) + "\n ITS A BUG"
+    else:
+        comment_text = ""
 
     # if there's a comment generated, write output to GITHUB_OUTPUT environment file so GitHub Actions can read it
     github_output = os.getenv('GITHUB_OUTPUT')
