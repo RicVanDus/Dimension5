@@ -24,7 +24,7 @@ class IssueData(BaseModel):
         return {label.name for label in self.labels}
 
 
-def get_current_issue_data() -> dict:
+def get_current_issue_data() -> IssueData:
     event_path = os.getenv("GITHUB_EVENT_PATH")
 
     if not event_path:
@@ -53,11 +53,12 @@ def get_current_issue_data() -> dict:
     req = urllib.request.Request(url, headers=headers)
 
     with urllib.request.urlopen(req) as response:
-        if response.status == 200:
-            return json.loads(response.read().decode('utf-8'))
-        else:
+        if response.status != 200:
             print(f"Error: Can't fetch data for issue {issue_number}: status {response.status}")
             sys.exit(1)
+        else:
+            json_data = json.loads(response.read().decode('utf-8'))
+            return IssueData.model_validate(json_data)
 
 
 def extractKeywords():
@@ -69,7 +70,7 @@ def createBasicQuery():
 
 
 def main():
-    issue_data = IssueData.model_validate(get_current_issue_data())
+    issue_data = get_current_issue_data()
 
     if "bug" in issue_data.label_names:
         comment_text = str(issue_data) + "\n ITS A BUG"
