@@ -14,7 +14,27 @@ jobs:
       issues: write
 
     steps:
+      - name: Wait for it
+        run: sleep 5m
+
+      # Required so the action can access your Python script in the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      # Run your Python script
+      - name: Generate comment content
+        id: python-step
+        run: python .github/scripts/issue_advisor_generator.py
+
+      # Only posts if the python script returned text (output is not empty)
       - name: Comment on new issue
+        if: steps.python-step.outputs.comment_body != ''
         uses: actions/github-script@v7
         with:
           script: |
@@ -22,5 +42,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Test reply'
+              body: `${{ steps.python-step.outputs.comment_body }}`
             })
