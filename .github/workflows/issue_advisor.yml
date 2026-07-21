@@ -8,6 +8,7 @@ jobs:
   auto-reply:
     runs-on: ubuntu-latest
     # filter to only respond on my created issues
+    # TODO: remove filter when testing is over
     if: github.event.issue.user.login == 'Richard-channable'
 
     permissions:
@@ -15,7 +16,7 @@ jobs:
 
     steps:
       - name: Wait for it
-        run: sleep 5m
+        run: sleep 5s # TODO: change to 5min when testing is over
 
       # Required so the action can access your Python script in the repository
       - name: Checkout repository
@@ -30,6 +31,8 @@ jobs:
       # Run your Python script
       - name: Generate comment content
         id: python-step
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python .github/scripts/issue_advisor_generator.py
 
       # Only posts if the python script returned text (output is not empty)
