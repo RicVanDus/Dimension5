@@ -100,7 +100,7 @@ class IssueAdvisor():
         if search_result:
             comment = ("### Possible related issues: \n "
                        "--- \n")
-            comment += "".join(f"- [{issue.title}]({issue.html_url.replace("/github", "/wwww.github")})\n" for issue in search_result.items)
+            comment += "".join(f"- [{issue.title}]({issue.html_url.replace("/github", "/www.github")})\n" for issue in search_result.items)
 
         return comment
 
