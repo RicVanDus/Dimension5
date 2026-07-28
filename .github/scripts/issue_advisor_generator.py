@@ -23,6 +23,7 @@ class IssueData(BaseModel):
     labels: Optional[List[IssueLabel]] = []
     user: IssueUser
     comments: int
+    url: str
 
     @property
     def label_names(self) -> set[str]:
@@ -91,7 +92,19 @@ class IssueAdvisor():
         pass
 
 
-    def create_search_query(self, issue_data: IssueData) -> str:
+    def generate_search_result(self, issue_data: IssueData) -> str:
+        search_result = self._make_search_query(issue_data)
+        comment = ""
+
+        if search_result:
+            comment = ("### Possible related issues: \n "
+                       "--- \n")
+            comment += (f"- [{issue.title}]({issue.url})\n" for issue in search_result.items)
+
+        return comment
+
+
+    def _make_search_query(self, issue_data: IssueData) -> SearchResult:
         query = urllib.parse.quote(f"repo:{self.repo_owner}/{self.repo_name} is:issue test")
         limit = 5
         url = f"https://api.github.com/search/issues?q={query}&per_page={limit}"
@@ -101,7 +114,7 @@ class IssueAdvisor():
 
     def main(self):
         self.get_event_data()
-        comment_text = self.create_search_query(
+        comment_text = self.generate_search_result(
             issue_data= self.get_current_issue_data()
         )
 
