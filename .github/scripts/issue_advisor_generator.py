@@ -23,7 +23,7 @@ class IssueData(BaseModel):
     labels: Optional[List[IssueLabel]] = []
     user: IssueUser
     comments: int
-    url: str
+    html_url: str
 
     @property
     def label_names(self) -> set[str]:
@@ -99,7 +99,7 @@ class IssueAdvisor():
         if search_result:
             comment = ("### Possible related issues: \n "
                        "--- \n")
-            comment += "".join(f"- [{issue.title}]({issue.url})\n" for issue in search_result.items)
+            comment += "".join(f"- [{issue.title}]({issue.html_url})\n" for issue in search_result.items)
 
         return comment
 
