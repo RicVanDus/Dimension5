@@ -92,7 +92,7 @@ class IssueAdvisor():
 
 
     def create_search_query(self, issue_data: IssueData) -> str:
-        query = urllib.parse.quote(f"owner:{self.repo_name} is:issue test")
+        query = urllib.parse.quote(f"repo:{self.repo_owner}/{self.repo_name} is:issue test")
         limit = 5
         url = f"https://api.github.com/search/issues?q={query}&per_page={limit}"
 
