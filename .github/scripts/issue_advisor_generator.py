@@ -96,16 +96,17 @@ class IssueAdvisor():
         search_result = self._make_search_query(issue_data)
         comment = ""
 
+        # make this a normal for loop
         if search_result:
             comment = ("### Possible related issues: \n "
                        "--- \n")
-            comment += "".join(f"- [{issue.title}]({issue.html_url})\n" for issue in search_result.items)
+            comment += "".join(f"- [{issue.title}]({issue.html_url.replace("/github", "/wwww.github")})\n" for issue in search_result.items)
 
         return comment
 
 
     def _make_search_query(self, issue_data: IssueData) -> SearchResult:
-        query = urllib.parse.quote(f"repo:{self.repo_owner}/{self.repo_name} is:issue test")
+        query = urllib.parse.quote(f"repo:{self.repo_owner}/{self.repo_name} is:issue result")
         limit = 5
         url = f"https://api.github.com/search/issues?q={query}&per_page={limit}"
 
