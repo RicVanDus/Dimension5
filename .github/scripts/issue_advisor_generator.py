@@ -20,6 +20,7 @@ class IssueLabel(BaseModel):
 
 
 class IssueData(BaseModel):
+    number: int
     body: str
     title: str
     labels: Optional[List[IssueLabel]] = []
@@ -112,11 +113,24 @@ class IssueAdvisor():
 
         search_result = self._make_search_query(issue_data)
 
-        if search_result:
+        # filter out this issue
+        filtered_items = [
+            item for item in search_result.items
+            if item.number != self.issue_number
+        ]
+
+        if filtered_items:
             comment = "### Possible related issues: \n "
-            for issue in search_result.items:
+            for issue in filtered_items:
                 new_link = issue.html_url.replace("/github", "/www.github")
                 comment += f"-  [{issue.title}]({new_link})\n"
+                if issue.labels:
+                    comment += "   "
+                    for label in issue.labels:
+                        label_name = label.name.replace(" ", "_")
+                        comment += (f"![{label.name}](https://img.shields.io/badge/"
+                                    f"{label_name}-{label.color}?style=flat) ")
+                    comment += "\n"
         return comment
 
 
