@@ -133,8 +133,8 @@ class IssueAdvisor():
                 new_link = issue.html_url.replace("/github", "/www.github")
                 issue_icon = ":green_circle:" if issue.state == "open" else ":purple_circle:"
 
-                comment += f"| {issue_icon} [{issue.title}]({new_link}) "
-                comment += "| :--- |"
+                comment += f"| {issue_icon} [{issue.title}]({new_link}) | \n"
+                comment += "| :--- | \n"
                 comment += f"| {issue.updated_at.split("T")[0]} - "
                 comment += " ".join(user.login for user in issue.assignees) + " |"
                 if issue.labels:
@@ -142,7 +142,7 @@ class IssueAdvisor():
                         label_name = label.name.replace(" ", "_")
                         comment += (f"![{label.name}](https://img.shields.io/badge/"
                                     f"{label_name}-{label.color}?style=flat) ")
-                    comment += "|"
+                    comment += "| \n"
 
             result_amount = search_result.total_count - len(filtered_items)
             if result_amount > 0:
