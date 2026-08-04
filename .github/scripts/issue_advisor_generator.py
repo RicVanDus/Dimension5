@@ -44,7 +44,7 @@ class SearchResult(BaseModel):
     items: Optional[List[IssueData]] = []
 
 
-SEARCH_LABELS = [] #make a list of labels we want to filter on
+SEARCH_LABELS = ["bug"] #make a list of labels we want to filter on
 
 
 class IssueAdvisor():
@@ -136,7 +136,9 @@ class IssueAdvisor():
                 comment += f"| {issue_icon} | [{issue.title}]({new_link}) | \n"
                 comment += "| --- | :--- | \n"
                 comment += f"| | {issue.updated_at.split("T")[0]} - "
-                comment += " ".join(user.login for user in issue.assignees) + " | \n"
+                comment += " ".join(user.login for user in issue.assignees) + (
+                    f" - {issue.comments} comments | \n"
+                )
                 if issue.labels:
                     comment += " | | "
                     for label in issue.labels:
@@ -173,12 +175,18 @@ class IssueAdvisor():
         extract the keywords from the title when doing a default
         """
         search_keywords = self._extract_keywords(issue_data.title)
-
         search_query = " ".join(search_keywords)
 
+        query_labels = [
+            f'label:"{label.name}"'
+            for label in issue_data.labels
+            if label.name in SEARCH_LABELS
+        ]
+
         full_query = urllib.parse.quote(
-            f"repo:{self.repo_owner}/{self.repo_name} is:issue {search_query}"
+            f"repo:{self.repo_owner}/{self.repo_name} is:issue {search_query} {query_labels}"
         )
+
         limit = 5
         limited_search_url = f"https://api.github.com/search/issues?q={full_query}&per_page={limit}"
         full_search_url = f"https://github.com/search?type=issues&q={full_query}"
