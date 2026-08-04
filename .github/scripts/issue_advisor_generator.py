@@ -12,6 +12,8 @@ from pydantic import BaseModel, Field
 # Dataclasses
 class IssueUser(BaseModel):
     login: str
+    id: int
+    avatar_url: str
 
 
 class IssueLabel(BaseModel):
@@ -21,12 +23,16 @@ class IssueLabel(BaseModel):
 
 class IssueData(BaseModel):
     number: int
+    state: str
     body: str
     title: str
     labels: Optional[List[IssueLabel]] = []
     user: IssueUser
     comments: int
     html_url: str
+    assignees: List[IssueUser] = []
+    created_at: str
+    updated_at: str
 
     @property
     def label_names(self) -> set[str]:
@@ -96,7 +102,8 @@ class IssueAdvisor():
 
 
     def get_current_issue_data(self) -> IssueData:
-        url = f"https://api.github.com/repos/{self.repo_owner}/{self.repo_name}/issues/{self.issue_number}"
+        url = (f"https://api.github.com/repos/{self.repo_owner}/"
+               f"{self.repo_name}/issues/{self.issue_number}")
 
         return self._make_request(url, IssueData)
 
@@ -111,7 +118,7 @@ class IssueAdvisor():
         """
         comment = ""
 
-        search_result = self._make_search_query(issue_data)
+        search_result, search_url = self._make_search_query(issue_data)
 
         # filter out this issue
         filtered_items = [
@@ -121,16 +128,27 @@ class IssueAdvisor():
 
         if filtered_items:
             comment = "### Possible related issues: \n "
+
             for issue in filtered_items:
                 new_link = issue.html_url.replace("/github", "/www.github")
-                comment += f"-  [{issue.title}]({new_link})\n"
+                issue_icon = ":green_circle:" if issue.state == "open" else ":purple_circle:"
+
+                comment += f"| {issue_icon} [{issue.title}]({new_link}) |"
+                comment += "| :--- |"
+                comment += f"| {issue.updated_at.split("T")[0]} - "
+                comment += " ".join(user.login for user in issue.assignees) + " |"
                 if issue.labels:
-                    comment += "   "
+                    comment += "| "
                     for label in issue.labels:
                         label_name = label.name.replace(" ", "_")
                         comment += (f"![{label.name}](https://img.shields.io/badge/"
                                     f"{label_name}-{label.color}?style=flat) ")
-                    comment += "\n"
+                    comment += "|"
+
+            result_amount = search_result.total_count - len(filtered_items)
+            if result_amount > 0:
+                comment += f"- ({result_amount}) more results: {search_url}"
+
         return comment
 
 
@@ -146,7 +164,9 @@ class IssueAdvisor():
         }
 
 
-    def _make_search_query(self, issue_data: IssueData, company_related: bool = False) -> SearchResult:
+    def _make_search_query(
+            self, issue_data: IssueData, company_related: bool = False
+    ) -> tuple[SearchResult, str]:
         """
         extract the keywords from the title when doing a default
         """
@@ -154,11 +174,14 @@ class IssueAdvisor():
 
         search_query = " ".join(search_keywords)
 
-        full_query = urllib.parse.quote(f"repo:{self.repo_owner}/{self.repo_name} is:issue {search_query}")
+        full_query = urllib.parse.quote(
+            f"repo:{self.repo_owner}/{self.repo_name} is:issue {search_query}"
+        )
         limit = 5
-        url = f"https://api.github.com/search/issues?q={full_query}&per_page={limit}"
+        full_search_url = f"https://api.github.com/search/issues?q={full_query}"
+        limited_search_url = full_search_url + f"&per_page={limit}"
 
-        return self._make_request(url, SearchResult)
+        return self._make_request(limited_search_url, SearchResult), full_search_url
 
 
     def main(self):
@@ -167,7 +190,7 @@ class IssueAdvisor():
             issue_data= self.get_current_issue_data()
         )
 
-        # if there's a comment generated, write output to GITHUB_OUTPUT environment file so GitHub Actions can read it
+        # if there's a comment generated, write output to GITHUB_OUTPUT environment
         github_output = os.getenv('GITHUB_OUTPUT')
         if github_output and comment_text:
             with open(github_output, 'w') as f_comment:
