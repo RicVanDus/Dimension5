@@ -141,10 +141,10 @@ class Game:
                 if event.key == pygame.K_SPACE:
                     self.selected_player.jump = True
 
-                if event.key == pygame.K_UP and self.press_up == False:
+                if event.key == pygame.K_UP and not self.press_up:
                     self.select_next_dimension(-1)
                     self.press_up = True
-                if event.key == pygame.K_DOWN and self.press_down == False:
+                if event.key == pygame.K_DOWN and not self.press_down:
                     self.select_next_dimension(1)
                     self.press_up = True
                 if event.key == pygame.K_1:

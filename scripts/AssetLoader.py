@@ -26,6 +26,7 @@ class AssetType(Enum):
     Hazard = "hazard"
     Unknown = "unknown"
 
+
 class AssetLoader():
     def __init__(self):
         ...

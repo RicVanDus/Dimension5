@@ -28,8 +28,6 @@ class LevelEditor:
         self.render_display = pygame.Surface(INTERNAL_RES)
 
 
-
-
     def run(self):
         ...
 

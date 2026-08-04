@@ -3,7 +3,6 @@ import sys
 import json
 import urllib.request
 import urllib.parse
-from hmac import new
 from typing import List, Dict, Optional, Any
 
 import pydantic
@@ -13,9 +12,11 @@ from pydantic import BaseModel, Field
 class IssueUser(BaseModel):
     login: str
 
+
 class IssueLabel(BaseModel):
     name: str
     color: str
+
 
 class IssueData(BaseModel):
     body: str
@@ -36,6 +37,13 @@ class SearchResult(BaseModel):
 
 
 class IssueAdvisor():
+    """
+    IssueAdvisor v1
+
+    Generates search results on keywords from the issue title. Giving back links to possible related
+    issues.
+    """
+
     def __init__(self):
         self.event_path: str
         self.repo_owner: str

@@ -12,8 +12,10 @@ class Animation():
 
         self.frame = 0
 
+
     def copy(self):
         return Animation(self.images, self.frametime, self.loop)
+
 
     def play(self) -> pygame.Surface:
         while True:

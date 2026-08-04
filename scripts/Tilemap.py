@@ -25,6 +25,7 @@ class Tilemap():
         for i in range(5):
             self.tilemap[((i + 8), 9)] = {'type': 'test/anim_placeholder', 'pos':(i + 8, 9), 'anim': True}
 
+
     def tiles_around(self, pos) -> list:
         tiles = []
         tile_pos = (int(pos[0] // self.tile_size), int(pos[1] // self.tile_size))
@@ -34,12 +35,14 @@ class Tilemap():
                 tiles.append(self.tilemap[check_loc])
         return tiles
 
+
     def physics_tiles_around(self, pos) -> list:
         rects = []
         for tile in self.tiles_around(pos):
             if tile['type'] in PHYSICS_TILES:
                 rects.append(pygame.Rect((tile['pos'][0] * self.tile_size, tile['pos'][1] * self.tile_size), (self.tile_size, self.tile_size)))
         return rects
+
 
     #This renders animated objects only after being copied. using the same tilemap still has duplicate objects ofcourse.
     def render(self, surface, scroll_offset=[0,0]):
