@@ -133,11 +133,12 @@ class IssueAdvisor():
                 new_link = issue.html_url.replace("/github", "/www.github")
                 issue_icon = ":green_circle:" if issue.state == "open" else ":purple_circle:"
 
-                comment += f"| {issue_icon} [{issue.title}]({new_link}) | \n"
-                comment += "| :--- | \n"
-                comment += f"| {issue.updated_at.split("T")[0]} - "
-                comment += " ".join(user.login for user in issue.assignees) + " |"
+                comment += f"| {issue_icon} | [{issue.title}]({new_link}) | \n"
+                comment += "| --- | :--- | \n"
+                comment += f"| | {issue.updated_at.split("T")[0]} - "
+                comment += " ".join(user.login for user in issue.assignees) + " | \n"
                 if issue.labels:
+                    comment += " | | "
                     for label in issue.labels:
                         label_name = label.name.replace(" ", "_")
                         comment += (f"![{label.name}](https://img.shields.io/badge/"
@@ -148,7 +149,7 @@ class IssueAdvisor():
 
             result_amount = search_result.total_count - len(filtered_items)
             if result_amount > 0:
-                comment += f"- ({result_amount}) more results: {search_url}"
+                comment += f"- **({result_amount}) more results:** {search_url}"
 
         return comment
 
@@ -179,8 +180,8 @@ class IssueAdvisor():
             f"repo:{self.repo_owner}/{self.repo_name} is:issue {search_query}"
         )
         limit = 5
-        full_search_url = f"https://api.github.com/search/issues?q={full_query}"
-        limited_search_url = full_search_url + f"&per_page={limit}"
+        limited_search_url = f"https://api.github.com/search/issues?q={full_query}&per_page={limit}"
+        full_search_url = f"https://github.com/search?type=issues&q={full_query}"
 
         return self._make_request(limited_search_url, SearchResult), full_search_url
 
