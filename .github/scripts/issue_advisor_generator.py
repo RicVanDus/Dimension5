@@ -3,6 +3,7 @@ import sys
 import json
 import urllib.request
 import urllib.parse
+from os.path import split
 from typing import List, Dict, Optional, Any
 
 import pydantic
@@ -34,6 +35,9 @@ class IssueData(BaseModel):
 class SearchResult(BaseModel):
     total_count: int
     items: Optional[List[IssueData]] = []
+
+
+SEARCH_LABELS = [] #make a list of labels we want to filter on
 
 
 class IssueAdvisor():
@@ -96,27 +100,49 @@ class IssueAdvisor():
         return self._make_request(url, IssueData)
 
 
-    def extractKeywords(self):
-        pass
-
-
     def generate_search_result(self, issue_data: IssueData) -> str:
-        search_result = self._make_search_query(issue_data)
+        """
+        We make 2 different search results: broad search & company related issues
+
+        Both are filtering on the Tool Section label and the company on its company_id label
+
+        We are showing a table of
+        """
         comment = ""
 
-        # make this a normal for loop
-        if search_result:
-            comment = ("### Possible related issues: \n "
-                       "--- \n")
-            comment += "".join(f"- [{issue.title}]({issue.html_url.replace("/github", "/www.github")})\n" for issue in search_result.items)
+        search_result = self._make_search_query(issue_data)
 
+        if search_result:
+            comment = "### Possible related issues: \n "
+            for issue in search_result.items:
+                new_link = issue.html_url.replace("/github", "/www.github")
+                comment += f"-  [{issue.title}]({new_link})\n"
         return comment
 
 
-    def _make_search_query(self, issue_data: IssueData) -> SearchResult:
-        query = urllib.parse.quote(f"repo:{self.repo_owner}/{self.repo_name} is:issue result")
+    def _extract_keywords(self, title: str) -> set[str]:
+        """
+        split the title and filter on useful strings
+        """
+        search_words = title.split( " - ")[1] # remove company name
+
+        return {
+            word for word in search_words.split(" ")
+            if len(word) >= 4 or word.isupper()
+        }
+
+
+    def _make_search_query(self, issue_data: IssueData, company_related: bool = False) -> SearchResult:
+        """
+        extract the keywords from the title when doing a default
+        """
+        search_keywords = self._extract_keywords(issue_data.title)
+
+        search_query = " ".join(search_keywords)
+
+        full_query = urllib.parse.quote(f"repo:{self.repo_owner}/{self.repo_name} is:issue {search_query}")
         limit = 5
-        url = f"https://api.github.com/search/issues?q={query}&per_page={limit}"
+        url = f"https://api.github.com/search/issues?q={full_query}&per_page={limit}"
 
         return self._make_request(url, SearchResult)
 
