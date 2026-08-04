@@ -142,7 +142,9 @@ class IssueAdvisor():
                         label_name = label.name.replace(" ", "_")
                         comment += (f"![{label.name}](https://img.shields.io/badge/"
                                     f"{label_name}-{label.color}?style=flat) ")
-                    comment += "| \n"
+                    comment += "|"
+
+                comment += "\n\n"
 
             result_amount = search_result.total_count - len(filtered_items)
             if result_amount > 0:
