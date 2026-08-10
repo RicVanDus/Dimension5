@@ -9,6 +9,8 @@ from typing import List, Dict, Optional, Any
 import pydantic
 from pydantic import BaseModel, Field
 
+import spacy
+
 # Dataclasses
 class IssueUser(BaseModel):
     login: str
@@ -44,7 +46,7 @@ class SearchResult(BaseModel):
     items: Optional[List[IssueData]] = []
 
 
-SEARCH_LABELS = ["bug"] #make a list of labels we want to filter on
+SEARCH_LABELS = ["bug"] # make a list of labels we want to filter on
 
 
 class IssueAdvisor():
@@ -160,11 +162,18 @@ class IssueAdvisor():
         """
         split the title and filter on useful strings
         """
-        search_words = title.split( " - ")[1] # remove company name
+        nlp = spacy.load("en_core_web_sm")
+
+        doc = nlp(title)
+
+        # Define POS tags that represent core domain concepts
+        # NOUN = general objects/things
+        # PROPN = proper nouns (e.g., framework names, services)
+        _allowed_pos = {"NOUN", "PROPN"}
 
         return {
-            word for word in search_words.split(" ")
-            if len(word) >= 4 or word.isupper()
+            word.text for word in doc
+            if word.pos_ in _allowed_pos and not word.is_punct
         }
 
 
