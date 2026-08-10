@@ -60,12 +60,12 @@ class SearchResult(BaseModel):
     items: Optional[List[IssueData]] = []
 
 # categories we want to search on
-SEARCH_LABELS = ["bug"]
+SEARCH_LABELS = ["first"]
 
 #labels we want to include in the query
 LABELS_TO_QUERY = {
-    "import": ["Tool section", "Platform"],
-    "orders": ["Tool section"],
+    "Import": ["Tool section", "Platform"],
+    "Orders": ["Tool section"],
     "API": ["Tool section"],
     "first": ["bug"]
 }
