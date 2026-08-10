@@ -154,9 +154,10 @@ class IssueAdvisor():
             result_amount = search_result.total_count - len(filtered_items)
             if result_amount > 0:
                 comment += f"- **({result_amount}) more results:** {search_url}"
+        else:
+            comment = search_url
 
         return comment
-
 
     def _extract_keywords(self, title: str) -> set[str]:
         """
@@ -164,7 +165,10 @@ class IssueAdvisor():
         """
         nlp = spacy.load("en_core_web_sm")
 
-        doc = nlp(title)
+        # split off the company name
+        title_without_company = title.split(" - ")[1]
+
+        doc = nlp(title_without_company)
 
         # Define POS tags that represent core domain concepts
         # NOUN = general objects/things
