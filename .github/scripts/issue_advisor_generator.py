@@ -40,16 +40,38 @@ class IssueData(BaseModel):
     def label_names(self) -> set[str]:
         return {label.name for label in self.labels}
 
+    @property
+    def category(self) -> str | None:
+        category_names = [
+            "Import",
+            "Orders",
+            "API",
+            "Feed",
+            "Quick fix",
+            "first"
+        ]
+        for label in self.label_names:
+            return next((item for item in category_names if item in label), None)
+        return None
+
 
 class SearchResult(BaseModel):
     total_count: int
     items: Optional[List[IssueData]] = []
 
+# categories we want to search on
+SEARCH_LABELS = ["bug"]
 
-SEARCH_LABELS = ["bug"] # make a list of labels we want to filter on
+#labels we want to include in the query
+LABELS_TO_QUERY = {
+    "import": ["Tool section", "Platform"],
+    "orders": ["Tool section"],
+    "API": ["Tool section"],
+    "first": ["bug"]
+}
 
 
-class IssueAdvisor():
+class IssueAdvisor:
     """
     IssueAdvisor v1
 
@@ -110,7 +132,7 @@ class IssueAdvisor():
         return self._make_request(url, IssueData)
 
 
-    def generate_search_result(self, issue_data: IssueData) -> str:
+    def generate_search_result(self, current_issue_data: IssueData) -> str:
         """
         We make 2 different search results: broad search & company related issues
 
@@ -120,13 +142,23 @@ class IssueAdvisor():
         """
         comment = ""
 
-        search_result, search_url = self._make_search_query(issue_data)
+        if not current_issue_data.category in SEARCH_LABELS:
+            return comment
+
+        search_result, search_url = self._make_search_query(current_issue_data)
 
         # filter out this issue
         filtered_items = [
             item for item in search_result.items
             if item.number != self.issue_number
         ]
+
+        list1 = [1, 2, 3, 4]
+        list2 = [4, 5, 6, 7]
+
+        has_common_value = any(item in set(list2) for item in list1)
+
+        print(has_common_value)  # True
 
         if filtered_items:
             comment = "### Possible related issues: \n "
@@ -211,7 +243,7 @@ class IssueAdvisor():
     def main(self):
         self.get_event_data()
         comment_text = self.generate_search_result(
-            issue_data= self.get_current_issue_data()
+            current_issue_data= self.get_current_issue_data()
         )
 
         # if there's a comment generated, write output to GITHUB_OUTPUT environment
