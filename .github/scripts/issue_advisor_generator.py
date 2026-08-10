@@ -133,9 +133,10 @@ class IssueAdvisor():
 
             for issue in filtered_items:
                 new_link = issue.html_url.replace("/github", "/www.github")
-                issue_icon = ":green_circle:" if issue.state == "open" else ":purple_circle:"
+                is_open = issue.state == "open"
+                status_icon = "◯" if is_open else "●"
 
-                comment += f"| {issue_icon} | [{issue.title}]({new_link}) | \n"
+                comment += f"| {status_icon} | [{issue.title}]({new_link}) | \n"
                 comment += "| --- | :--- | \n"
                 comment += f"| | {issue.updated_at.split("T")[0]} - "
                 comment += " ".join(user.login for user in issue.assignees) + (
