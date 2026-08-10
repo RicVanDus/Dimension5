@@ -64,9 +64,9 @@ SEARCH_LABELS = ["first"]
 
 #labels we want to include in the query
 LABELS_TO_QUERY = {
-    "Import": ["Tool section", "Platform"],
-    "Orders": ["Tool section"],
-    "API": ["Tool section"],
+    "Import": ["Tool", "Platform"],
+    "Orders": ["Tool"],
+    "API": ["Tool"],
     "first": ["bug"]
 }
 
@@ -132,7 +132,7 @@ class IssueAdvisor:
         return self._make_request(url, IssueData)
 
 
-    def generate_search_result(self, current_issue_data: IssueData) -> str:
+    def generate_search_result(self, current_issue: IssueData) -> str:
         """
         We make 2 different search results: broad search & company related issues
 
@@ -142,10 +142,10 @@ class IssueAdvisor:
         """
         comment = ""
 
-        if not current_issue_data.category in SEARCH_LABELS:
+        if not current_issue.category in SEARCH_LABELS:
             return comment
 
-        search_result, search_url = self._make_search_query(current_issue_data)
+        search_result, search_url = self._make_search_query(current_issue)
 
         # filter out this issue
         filtered_items = [
@@ -215,22 +215,25 @@ class IssueAdvisor:
 
 
     def _make_search_query(
-            self, issue_data: IssueData, company_related: bool = False
+            self, current_issue: IssueData, company_related: bool = False
     ) -> tuple[SearchResult, str]:
         """
         extract the keywords from the title when doing a default
         """
-        search_keywords = self._extract_keywords(issue_data.title)
+        search_keywords = self._extract_keywords(current_issue.title)
         search_query = " ".join(search_keywords)
+        search_labels = ""
 
-        query_labels = [
-            f'label:"{label.name}"'
-            for label in issue_data.labels
-            if label.name in SEARCH_LABELS
-        ]
+        if labels_to_include := LABELS_TO_QUERY.get(current_issue.category):
+            query_labels = [
+                f'label:"{label}"'
+                for label in current_issue.label_names
+                if any(inc.lower() in label.lower() for inc in labels_to_include)
+            ]
+            search_labels = " ".join(query_labels)
 
         full_query = urllib.parse.quote(
-            f"repo:{self.repo_owner}/{self.repo_name} is:issue {search_query} {query_labels}"
+            f"repo:{self.repo_owner}/{self.repo_name} is:issue {search_query} {search_labels}"
         )
 
         limit = 5
@@ -243,7 +246,7 @@ class IssueAdvisor:
     def main(self):
         self.get_event_data()
         comment_text = self.generate_search_result(
-            current_issue_data= self.get_current_issue_data()
+            current_issue= self.get_current_issue_data()
         )
 
         # if there's a comment generated, write output to GITHUB_OUTPUT environment
