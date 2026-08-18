@@ -160,7 +160,7 @@ class IssueAdvisor:
                 if issue.labels:
                     comment += " | | "
                     for label in issue.labels:
-                        if any(exc.lower() in label.name for exc in LABELS_NOT_IN_VIEW):
+                        if not any(exc.lower() in label.name for exc in LABELS_NOT_IN_VIEW):
                             label_name = label.name.replace(" ", "_")
                             comment += (f"![{label.name}](https://img.shields.io/badge/"
                                         f"{label_name}-{label.color}?style=flat) ")
