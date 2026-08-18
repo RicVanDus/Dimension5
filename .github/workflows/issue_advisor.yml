@@ -10,7 +10,7 @@ jobs:
     # filter to only respond on my created issues, label Project and Import
     if: >-
       contains(github.event.issue.labels.*.name, 'Tool Section: Import') &&
-#      contains(github.event.issue.labels.*.name, 'Project') &&
+      contains(github.event.issue.labels.*.name, 'Project') &&
       github.event.issue.user.login == 'Richard-channable'
 #    if: >-
 #      contains(github.event.issue.labels.*.name, 'Tool Section: Import') &&
@@ -28,7 +28,7 @@ jobs:
 
       # Set up Python environment
       - name: Set up Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
           cache: 'pip'
