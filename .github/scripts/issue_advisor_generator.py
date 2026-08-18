@@ -143,13 +143,6 @@ class IssueAdvisor:
             if item.number != self.issue_number
         ]
 
-        list1 = [1, 2, 3, 4]
-        list2 = [4, 5, 6, 7]
-
-        has_common_value = any(item in set(list2) for item in list1)
-
-        print(has_common_value)  # True
-
         if filtered_items:
             comment = "### Possible related issues: \n "
 
