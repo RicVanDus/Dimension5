@@ -62,13 +62,16 @@ class SearchResult(BaseModel):
 # categories we want to search on
 SEARCH_LABELS = ["first"]
 
-#labels we want to include in the query
+# labels we want to include in the query
 LABELS_TO_QUERY = {
-    "Import": ["Tool", "Platform"],
+    "Import": ["Tool", "Platform:"],
     "Orders": ["Tool"],
     "API": ["Tool"],
     "first": ["bug"]
 }
+
+# labels we don't want to show in the results view
+LABELS_NOT_IN_VIEW = ["z_company", "Country:", "Waiting"]
 
 
 class IssueAdvisor:
@@ -85,6 +88,20 @@ class IssueAdvisor:
         self.repo_name: str
         self.issue_number: str
         self.github_token: str
+
+
+    def main(self):
+        self.get_event_data()
+        comment_text = self.generate_search_result(
+            current_issue= self.get_current_issue_data()
+        )
+
+        # if there's a comment generated, write output to GITHUB_OUTPUT environment
+        github_output = os.getenv('GITHUB_OUTPUT')
+        if github_output and comment_text:
+            with open(github_output, 'w') as f_comment:
+                f_comment.write(f"comment_body<<EOF\n{comment_text}\nEOF\n")
+
 
     def get_event_data(self) -> None:
         event_path = os.getenv("GITHUB_EVENT_PATH")
@@ -104,41 +121,14 @@ class IssueAdvisor:
         self.issue_number = event_data['issue']['number']
 
 
-    def _make_request(
-            self, url: str,
-            response_model: type[pydantic.BaseModel]
-    ) -> Any:
-        headers = {
-            "Authorization": f"Bearer {self.github_token}",
-            "Accept": "application/vnd.github+json",
-            "User-Agent": "GitHub-Actions-Script"
-        }
-
-        req = urllib.request.Request(url, headers=headers)
-
-        with urllib.request.urlopen(req) as response:
-            if response.status != 200:
-                print(f"Wrong response from {url} - status {response.status}")
-                sys.exit(1)
-            else:
-                json_data = json.loads(response.read().decode('utf-8'))
-                return response_model.model_validate(json_data)
-
-
-    def get_current_issue_data(self) -> IssueData:
-        url = (f"https://api.github.com/repos/{self.repo_owner}/"
-               f"{self.repo_name}/issues/{self.issue_number}")
-
-        return self._make_request(url, IssueData)
-
-
     def generate_search_result(self, current_issue: IssueData) -> str:
         """
-        We make 2 different search results: broad search & company related issues
+        We make 2 different search results: broad search & company related issues (TODO).
+        Both are filtering on the Tool Section label and the company on its company_id label.
 
-        Both are filtering on the Tool Section label and the company on its company_id label
+        This generates Github comment content with the search results presented in tables.
 
-        We are showing a table of
+        If there are no search results (empty string returns) the action won't post the comment.
         """
         comment = ""
 
@@ -177,9 +167,10 @@ class IssueAdvisor:
                 if issue.labels:
                     comment += " | | "
                     for label in issue.labels:
-                        label_name = label.name.replace(" ", "_")
-                        comment += (f"![{label.name}](https://img.shields.io/badge/"
-                                    f"{label_name}-{label.color}?style=flat) ")
+                        if any(exc.lower() in label.name for exc in LABELS_NOT_IN_VIEW):
+                            label_name = label.name.replace(" ", "_")
+                            comment += (f"![{label.name}](https://img.shields.io/badge/"
+                                        f"{label_name}-{label.color}?style=flat) ")
                     comment += "|"
 
                 comment += "\n\n"
@@ -191,6 +182,35 @@ class IssueAdvisor:
             comment = search_url
 
         return comment
+
+
+    def _make_request(
+            self, url: str,
+            response_model: type[pydantic.BaseModel]
+    ) -> Any:
+        headers = {
+            "Authorization": f"Bearer {self.github_token}",
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "GitHub-Actions-Script"
+        }
+
+        req = urllib.request.Request(url, headers=headers)
+
+        with urllib.request.urlopen(req) as response:
+            if response.status != 200:
+                print(f"Wrong response from {url} - status {response.status}")
+                sys.exit(1)
+            else:
+                json_data = json.loads(response.read().decode('utf-8'))
+                return response_model.model_validate(json_data)
+
+
+    def get_current_issue_data(self) -> IssueData:
+        url = (f"https://api.github.com/repos/{self.repo_owner}/"
+               f"{self.repo_name}/issues/{self.issue_number}")
+
+        return self._make_request(url, IssueData)
+
 
     def _extract_keywords(self, title: str) -> set[str]:
         """
@@ -243,18 +263,6 @@ class IssueAdvisor:
         return self._make_request(limited_search_url, SearchResult), full_search_url
 
 
-    def main(self):
-        self.get_event_data()
-        comment_text = self.generate_search_result(
-            current_issue= self.get_current_issue_data()
-        )
-
-        # if there's a comment generated, write output to GITHUB_OUTPUT environment
-        github_output = os.getenv('GITHUB_OUTPUT')
-        if github_output and comment_text:
-            with open(github_output, 'w') as f_comment:
-                # We use multiline formatting in case your python string contains newlines
-                f_comment.write(f"comment_body<<EOF\n{comment_text}\nEOF\n")
 
 
 if __name__ == '__main__':
