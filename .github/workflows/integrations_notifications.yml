@@ -1,0 +1,70 @@
+name: Integrations Notification to Mattermost
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  check-label-and-notify:
+    # Run if the added label is any SLA or High Impact / High Priority
+    if: >-
+      github.event.label.name == 'bug' ||
+      github.event.label.name == 'SLA: Silver' ||
+      github.event.label.name == 'SLA: Bronze' ||
+      github.event.label.name == 'Misc: High Priority' || 
+      github.event.label.name == 'High Impact'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send notification to Mattermost
+        env:
+          MATTERMOST_WEBHOOK_URL: ${{ secrets.INTEGRATIONS_NOTIFICATIONS_MATTERMOST }}
+          LABEL_NAME: ${{ github.event.label.name }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          # Map label to specific header, emoji, and side border color
+          case "$LABEL_NAME" in
+            "bug")
+              EMOJI=":gold_sla:"
+              SLA_NAME="Gold SLA"
+              COLOR="#FFD700"
+              ;;
+            "SLA: Silver")
+              EMOJI=":silver_sla:"
+              SLA_NAME="Silver SLA"
+              COLOR="#C0C0C0"
+              ;;
+            "SLA: Bronze")
+              EMOJI=":bronze_sla:️"
+              SLA_NAME="Bronze SLA"
+              COLOR="#CD7F32"
+              ;;
+            "Misc: High Priority")
+              EMOJI=":alarm:"
+              SLA_NAME="High Priority"
+              COLOR="#FF0000"
+              ;;
+            "High Impact")
+              EMOJI=":alarm:"
+              SLA_NAME="High Impact"
+              COLOR="#FF0000"
+              ;;         
+          esac
+
+          # Construct rich attachment payload for Mattermost
+          PAYLOAD=$(cat <<EOF
+          {
+            "attachments": [
+              {
+                "color": "${COLOR}",
+                "text": "@channel\n${EMOJI} **${SLA_NAME} issue on the board!**\nIssue #${ISSUE_NUMBER}: [${ISSUE_TITLE}](${ISSUE_URL})"
+              }
+            ]
+          }
+          EOF
+          )
+
+          # Send POST request to Mattermost webhook
+          curl -i -X POST -H 'Content-Type: application/json' --data "$PAYLOAD" "$MATTERMOST_WEBHOOK_URL"

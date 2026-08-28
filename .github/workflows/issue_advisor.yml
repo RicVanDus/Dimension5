@@ -8,11 +8,10 @@ jobs:
   auto-reply:
     runs-on: ubuntu-latest
     # filter to only respond on my created issues, label Project and Import
-    if: github.event.issue.user.login == 'Richard-channable'
-#    if: >-
-#      contains(github.event.issue.labels.*.name, 'Tool Section: Import') &&
-#      contains(github.event.issue.labels.*.name, 'Project') &&
-#      github.event.issue.user.login == 'Richard-channable'
+    if: >-
+      contains(github.event.issue.labels.*.name, 'Tool Section: Imports') &&
+      contains(github.event.issue.labels.*.name, 'Project') &&
+      github.event.issue.user.login == 'Richard-channable'
 
     permissions:
       issues: write
@@ -23,11 +22,11 @@ jobs:
 
       # Required so the action can access your Python script in the repository
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 #4.2
 
       # Set up Python environment
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 #5.4
         with:
           python-version: '3.12'
           cache: 'pip'
@@ -48,7 +47,7 @@ jobs:
       # Only posts if the python script returned text (output is not empty)
       - name: Comment on new issue
         if: steps.python-step.outputs.comment_body != ''
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea #7.0.1
         with:
           script: |
             github.rest.issues.createComment({

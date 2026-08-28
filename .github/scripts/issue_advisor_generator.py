@@ -43,7 +43,7 @@ class IssueData(BaseModel):
     @property
     def category(self) -> str | None:
         category_names = [
-            "Import",
+            "Imports",
             "Orders",
             "API",
             "Feed",
@@ -51,7 +51,9 @@ class IssueData(BaseModel):
             "first"
         ]
         for label in self.label_names:
-            return next((item for item in category_names if item in label), None)
+            match = next((item for item in category_names if item in label), None)
+            if match:
+                return match
         return None
 
 
@@ -64,7 +66,7 @@ SEARCH_LABELS = ["first"]
 
 # labels we want to include in the query
 LABELS_TO_QUERY = {
-    "Import": ["Tool", "Platform:"],
+    "Imports": ["Tool", "Platform:"],
     "Orders": ["Tool"],
     "API": ["Tool"],
     "first": ["bug"]
